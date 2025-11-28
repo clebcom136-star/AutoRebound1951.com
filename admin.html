@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - AutoRebound</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="assets/dashboard-dragdrop.css">
+    <link rel="stylesheet" href="assets/dashboard-animations.css">
+    <!-- Collapsible CSS Disabled -->
+    <!-- <link rel="stylesheet" href="assets/dashboard-collapsible.css"> -->
+    <script>
+        // Configure Tailwind for dark mode
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Dark mode initialization
+        if (localStorage.getItem('darkMode') === 'true' ||
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/smooth-styles.css">
+    <script src="/assets/js/smooth-transitions.js" defer></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .sidebar-item.active {
+            background: linear-gradient(90deg, #f97316 0%, #fb923c 100%);
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .settings-tab {
+            display: none;
+        }
+        .settings-tab.active {
+            display: block;
+        }
+        /* Dark mode transitions */
+        * {
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        /* Dark mode for chart containers */
+        .dark .chart-container {
+            background: #1f2937;
+        }
+        /* Toggle switch styles */
+        .toggle-switch {
+            width: 48px;
+            height: 24px;
+            background: #d1d5db;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch.active {
+            background: #f97316;
+        }
+        .toggle-switch .toggle-ball {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        .toggle-switch.active .toggle-ball {
+            transform: translateX(24px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900">
+    <div class="flex h-screen">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-900 dark:bg-black text-white flex flex-col">
+            <div class="p-4">
+                <h1 class="text-2xl font-bold">AutoRebound</h1>
+                <p class="text-sm text-gray-400 mt-1">Admin Panel</p>
+            </div>
+            
+            <nav class="flex-1 mt-8">
+                <a href="?tab=dashboard" class="sidebar-item active flex items-center px-4 py-3 hover:bg-gray-800 transition">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Dashboard
+                </a>
+                
+                <a href="?tab=inventory" class="sidebar-item  flex items-center px-4 py-3 hover:bg-gray-800 transition">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Inventory
+                </a>
+                
+                <a href="?tab=orders" class="sidebar-item  flex items-center px-4 py-3 hover:bg-gray-800 transition">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                    </svg>
+                    Orders & Tracking
+                                    </a>
+                
+                <a href="?tab=users" class="sidebar-item  flex items-center px-4 py-3 hover:bg-gray-800 transition">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                    Users
+                                    </a>
+
+                <a href="?tab=messages" class="sidebar-item  flex items-center px-4 py-3 hover:bg-gray-800 transition">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                    Messages
+                                    </a>
+                <a href="?tab=visitor-details" class="sidebar-item  flex items-center px-4 py-3 hover:bg-gray-800 transition">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Visitor Details
+                </a>
+                
+                <a href="?tab=settings" class="sidebar-item  flex items-center px-4 py-3 hover:bg-gray-800 transition">
+                    <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Settings
+                </a>
+            </nav>
+            
+            <div class="p-4 border-t border-gray-800">
+                <div class="flex items-center justify-between mb-3">
+                    <div>
+                        <p class="text-sm font-semibold">Admin AutoRebound</p>
+                        <p class="text-xs text-gray-400">Administrator</p>
+                    </div>
+                </div>
+                <div class="flex space-x-2">
+                    <a href="../index.php" class="flex-1 text-center py-2 bg-gray-800 rounded hover:bg-gray-700 text-sm">
+                        View Site
+                    </a>
+                    <a href="../auth.php?action=logout" class="flex-1 text-center py-2 bg-red-600 rounded hover:bg-red-700 text-sm">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="flex-1 overflow-y-auto">
+            <!-- Top Bar -->
+            <div class="bg-white dark:bg-gray-800 shadow-sm px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-2xl font-semibold text-gray-800 dark:text-white">
+                        Dashboard                    </h2>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-gray-500 dark:text-gray-400">
+                            Friday, November 28, 2025                        </span>
+
+                        <!-- Dark Mode Toggle -->
+                        <div class="flex items-center space-x-2">
+                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                            <div id="darkModeToggle" class="toggle-switch" onclick="toggleDarkMode()">
+                                <div class="toggle-ball"></div>
+                            </div>
+                            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                        </div>
+
+                        <button onclick="location.reload()" class="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Page Content -->
+            <div class="p-6">
+                                    <!-- Dashboard Tab -->
+
+<!-- Dashboard Widgets Container -->
+<div id="dashboardWidgets" class="space-y-8">
+
+<!-- KPI Cards Widget -->
+<div class="widget-container" data-widget-id="kpi-cards">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Vehicles Sold -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Vehicles Sold</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">14</p>
+            </div>
+            <div class="w-12 h-12 bg-orange-100 dark:bg-orange-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-orange-500 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M8 11v6a2 2 0 002 2h4a2 2 0 002-2v-6M8 11h8" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Listings -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Listings</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">6</p>
+            </div>
+            <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Orders -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Orders</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">0</p>
+            </div>
+            <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Users -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-600 dark:text-gray-400">Active Users</p>
+                <p class="text-2xl font-bold text-gray-900 dark:text-white">20/22</p>
+            </div>
+            <div class="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
+                <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Notifications and Alerts Widget -->
+<div class="widget-container" data-widget-id="notifications">
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+        <svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+        </svg>
+        Notifications & Alerts
+    </h3>
+
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <!-- Unread Messages Alert -->
+        <div class="relative p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                        Messages
+                    </p>
+                    <p class="text-2xl font-bold text-gray-700 dark:text-gray-300">
+                        0                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Unread
+                    </p>
+                </div>
+                            </div>
+                    </div>
+
+        <!-- Expiring Reservations Alert -->
+        <div class="relative p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                        Reservations
+                    </p>
+                    <p class="text-2xl font-bold text-gray-700 dark:text-gray-300">
+                        0                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Expiring Soon
+                    </p>
+                </div>
+                            </div>
+                    </div>
+
+        <!-- Vehicles Without Images Alert -->
+        <div class="relative p-4 rounded-lg border-2 border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase">
+                        Vehicles
+                    </p>
+                    <p class="text-2xl font-bold text-gray-700 dark:text-gray-300">
+                        0                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Need Images
+                    </p>
+                </div>
+                            </div>
+                    </div>
+
+        <!-- New Users Alert -->
+        <div class="relative p-4 rounded-lg border-2 border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30">
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-green-600 dark:text-green-400 uppercase">
+                        New Users
+                    </p>
+                    <p class="text-2xl font-bold text-green-700 dark:text-green-300">
+                        3                    </p>
+                    <p class="text-xs text-green-600 dark:text-green-400 mt-1">
+                        Last 24h
+                    </p>
+                </div>
+                                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                </svg>
+                            </div>
+                        <a href="?tab=users" class="absolute inset-0"></a>
+                    </div>
+    </div>
+
+    </div>
+</div>
+
+<!-- Interactive Widgets -->
+<div class="widget-container" data-widget-id="interactive-widgets">
+<div class="grid lg:grid-cols-3 gap-6">
+    <!-- To-Do List Widget -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">To-Do List</h3>
+            <button onclick="addTodoItem()" class="text-orange-500 hover:text-orange-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+            </button>
+        </div>
+        <div id="todoList" class="space-y-2">
+                            <div class="text-gray-500 dark:text-gray-400 text-sm text-center py-4">No tasks yet</div>
+                    </div>
+        <div id="addTodoForm" class="hidden mt-4 pt-4 border-t dark:border-gray-700">
+            <input type="text" id="newTodoInput" placeholder="Enter new task..."
+                   class="w-full px-3 py-2 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+            <div class="flex justify-end space-x-2 mt-2">
+                <button onclick="cancelNewTodo()" class="px-3 py-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">Cancel</button>
+                <button onclick="saveNewTodo()" class="px-3 py-1 text-sm bg-orange-500 text-white rounded hover:bg-orange-600">Add</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Calendar Widget -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Upcoming Events</h3>
+        <div class="space-y-3">
+            
+                        <div class="flex items-start space-x-3">
+                <div class="flex-shrink-0 w-12 text-center">
+                    <div class="text-xs text-gray-500 dark:text-gray-400 uppercase">
+                        Nov                    </div>
+                    <div class="text-lg font-bold text-gray-900 dark:text-white">
+                        28                    </div>
+                </div>
+                <div class="flex-1 pt-1">
+                    <p class="text-sm font-medium text-gray-900 dark:text-white">
+                        Today                    </p>
+                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                         orders, 0 messages                    </p>
+                </div>
+                <div class="text-xs text-gray-400 dark:text-gray-500">
+                    01:44                </div>
+            </div>
+                    </div>
+        <button onclick="window.location.href='?tab=reservations'"
+                class="mt-4 w-full text-center text-sm text-orange-500 dark:text-orange-400 hover:text-orange-600 dark:hover:text-orange-300">
+            View All Events →
+        </button>
+    </div>
+
+    <!-- Quick Search Widget -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Search</h3>
+        <div class="space-y-3">
+            <div class="relative">
+                <input type="text"
+                       id="quickSearchInput"
+                       placeholder="Search vehicles, users, orders..."
+                       class="w-full px-3 py-2 pl-9 border dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-500">
+                <svg class="w-4 h-4 absolute left-3 top-2.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+            <div id="quickSearchResults" class="hidden space-y-2 max-h-64 overflow-y-auto"></div>
+        </div>
+
+        <!-- Recent Activity Feed -->
+        <div class="mt-6 pt-6 border-t dark:border-gray-700">
+            <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Recent Activity</h4>
+            <div class="space-y-2">
+                
+                                <div class="flex items-start space-x-2 text-xs">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-gray-700 dark:text-gray-300">New vehicle: 1996 Dodge Roadtrek 190 Popular</p>
+                        <p class="text-gray-400 dark:text-gray-500">Nov 19, 12:40</p>
+                    </div>
+                </div>
+                                <div class="flex items-start space-x-2 text-xs">
+                    <svg class="w-4 h-4 text-gray-400 dark:text-gray-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <p class="text-gray-700 dark:text-gray-300">New vehicle: 1969 Chevrolet Camaro</p>
+                        <p class="text-gray-400 dark:text-gray-500">Nov 19, 11:56</p>
+                    </div>
+                </div>
+                            </div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- Charts Widget -->
+<div class="widget-container" data-widget-id="charts">
+<div class="grid lg:grid-cols-2 gap-6">
+    <!-- Categories Distribution -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Categories Distribution</h3>
+        <div style="width: 100%; height: 300px;">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Status Distribution -->
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-6">Status Distribution</h3>
+        <div style="width: 100%; height: 300px;">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions - EXACT same as old site -->
+<div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-100 dark:border-gray-700 mb-8">
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h3>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <button
+            onclick="showAddVehicleModal()"
+            class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+        >
+            <svg class="w-8 h-8 text-gray-700 dark:text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Add Vehicle</span>
+        </button>
+        
+        <button 
+            onclick="handleProcessOrders()"
+            class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+        >
+            <svg class="w-8 h-8 text-gray-700 dark:text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            </svg>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Process Orders</span>
+        </button>
+        
+        <button 
+            onclick="handleGenerateReport()"
+            class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+        >
+            <svg class="w-8 h-8 text-gray-700 dark:text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Sales Report</span>
+        </button>
+        
+        <button 
+            onclick="handleBulkStatusUpdate()"
+            class="flex flex-col items-center p-4 bg-gray-50 dark:bg-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 rounded-lg transition-colors"
+        >
+            <svg class="w-8 h-8 text-gray-700 dark:text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Update Status</span>
+        </button>
+    </div>
+</div>
+
+<!-- Add Vehicle Modal (hidden by default) -->
+<div id="addVehicleModal" class="hidden fixed inset-0 bg-gray-600 dark:bg-gray-900 bg-opacity-50 dark:bg-opacity-50 overflow-y-auto h-full w-full z-50">
+    <div class="relative top-20 mx-auto p-5 border dark:border-gray-700 w-[600px] shadow-lg rounded-md bg-white dark:bg-gray-800">
+        <h3 class="text-lg font-bold text-gray-900 dark:text-white mb-4">Add New Vehicle</h3>
+        <p class="text-gray-600 dark:text-gray-400 mb-4">To add a new vehicle, please go to the Inventory tab.</p>
+        <div class="flex justify-end">
+            <button onclick="closeAddVehicleModal()" class="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-400 dark:hover:bg-gray-600 mr-2">
+                Close
+            </button>
+            <button onclick="window.location.href='?tab=inventory'" class="px-4 py-2 bg-orange-500 text-white rounded-md hover:bg-orange-600">
+                Go to Inventory
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+// Data for charts
+const categoryDistribution = [];
+const statusDistribution = [{"name":"Available","value":"6"},{"name":"Sold","value":"7"}];
+
+// Chart colors - extended palette for more categories
+const COLORS = ['#3B82F6', '#10B981', '#F59E0B', '#8B5CF6', '#EF4444', '#14B8A6', '#F97316', '#6366F1'];
+
+// Function to get chart colors based on dark mode
+function getChartColors() {
+    const isDark = document.documentElement.classList.contains('dark');
+    return {
+        textColor: isDark ? '#FFFFFF' : '#374151',
+        borderColor: isDark ? '#374151' : '#ffffff',
+        gridColor: isDark ? '#374151' : '#E5E7EB'
+    };
+}
+
+// Set Chart.js defaults based on dark mode
+function updateChartDefaults() {
+    const chartColors = getChartColors();
+    if (typeof Chart !== 'undefined') {
+        Chart.defaults.color = chartColors.textColor;
+        Chart.defaults.borderColor = chartColors.gridColor;
+        Chart.defaults.plugins.legend.labels.color = chartColors.textColor;
+    }
+}
+
+// Update defaults on load
+updateChartDefaults();
+
+// Categories Distribution Chart
+const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+const chartColors = getChartColors();
+
+if (categoryDistribution.length === 0) {
+    categoryCtx.font = '16px Inter';
+    categoryCtx.fillStyle = chartColors.textColor;
+    categoryCtx.textAlign = 'center';
+    categoryCtx.fillText('No data available', categoryCtx.canvas.width / 2, categoryCtx.canvas.height / 2);
+} else {
+    window.categoryChart = new Chart(categoryCtx, {
+    type: 'pie',
+    data: {
+        labels: categoryDistribution.map(item => `${item.name} (${item.value})`),
+        datasets: [{
+            data: categoryDistribution.map(item => item.value),
+            backgroundColor: COLORS,
+            borderWidth: 2,
+            borderColor: chartColors.borderColor,
+            hoverOffset: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                onClick: function(e, legendItem, legend) {
+                    const index = legendItem.index;
+                    const chart = legend.chart;
+                    const meta = chart.getDatasetMeta(0);
+
+                    // Toggle visibility
+                    meta.data[index].hidden = !meta.data[index].hidden;
+
+                    // Update chart
+                    chart.update();
+                },
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12,
+                        family: 'Inter'
+                    },
+                    color: chartColors.textColor,
+                    generateLabels: function(chart) {
+                        const data = chart.data;
+                        if (data.labels.length && data.datasets.length) {
+                            const dataset = data.datasets[0];
+                            const isDark = document.documentElement.classList.contains('dark');
+
+                            return data.labels.map((label, i) => {
+                                const value = dataset.data[i];
+                                return {
+                                    text: `${categoryDistribution[i].name}: ${value}`,
+                                    fillStyle: dataset.backgroundColor[i],
+                                    strokeStyle: dataset.backgroundColor[i],
+                                    lineWidth: 2,
+                                    hidden: false,
+                                    index: i,
+                                    fontColor: isDark ? '#FFFFFF' : '#374151'
+                                };
+                            });
+                        }
+                        return [];
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        // Calculate total only from visible items
+                        const meta = context.chart.getDatasetMeta(0);
+                        let total = 0;
+                        context.dataset.data.forEach((value, i) => {
+                            if (!meta.data[i].hidden) {
+                                total += value;
+                            }
+                        });
+                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                        return `${categoryDistribution[context.dataIndex].name}: ${context.parsed} (${percentage}%)`;
+                    }
+                },
+                filter: function(tooltipItem) {
+                    // Don't show tooltip for hidden items
+                    const meta = tooltipItem.chart.getDatasetMeta(0);
+                    return !meta.data[tooltipItem.dataIndex].hidden;
+                }
+            }
+        },
+        animation: {
+            animateRotate: true,
+            animateScale: false
+        }
+    }
+    });
+}
+
+// Status Distribution Chart
+const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+if (statusDistribution.length === 0) {
+    statusCtx.font = '16px Inter';
+    statusCtx.fillStyle = chartColors.textColor;
+    statusCtx.textAlign = 'center';
+    statusCtx.fillText('No data available', statusCtx.canvas.width / 2, statusCtx.canvas.height / 2);
+} else {
+    window.statusChart = new Chart(statusCtx, {
+    type: 'pie',
+    data: {
+        labels: statusDistribution.map(item => `${item.name} (${item.value})`),
+        datasets: [{
+            data: statusDistribution.map(item => item.value),
+            backgroundColor: COLORS,
+            borderWidth: 2,
+            borderColor: chartColors.borderColor,
+            hoverOffset: 8
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                onClick: function(e, legendItem, legend) {
+                    const index = legendItem.index;
+                    const chart = legend.chart;
+                    const meta = chart.getDatasetMeta(0);
+
+                    // Toggle visibility
+                    meta.data[index].hidden = !meta.data[index].hidden;
+
+                    // Update chart
+                    chart.update();
+                },
+                labels: {
+                    padding: 15,
+                    font: {
+                        size: 12,
+                        family: 'Inter'
+                    },
+                    color: chartColors.textColor,
+                    generateLabels: function(chart) {
+                        const data = chart.data;
+                        if (data.labels.length && data.datasets.length) {
+                            const dataset = data.datasets[0];
+                            const isDark = document.documentElement.classList.contains('dark');
+
+                            return data.labels.map((label, i) => {
+                                const value = dataset.data[i];
+                                return {
+                                    text: `${statusDistribution[i].name}: ${value}`,
+                                    fillStyle: dataset.backgroundColor[i],
+                                    strokeStyle: dataset.backgroundColor[i],
+                                    lineWidth: 2,
+                                    hidden: false,
+                                    index: i,
+                                    fontColor: isDark ? '#FFFFFF' : '#374151'
+                                };
+                            });
+                        }
+                        return [];
+                    }
+                }
+            },
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        // Calculate total only from visible items
+                        const meta = context.chart.getDatasetMeta(0);
+                        let total = 0;
+                        context.dataset.data.forEach((value, i) => {
+                            if (!meta.data[i].hidden) {
+                                total += value;
+                            }
+                        });
+                        const percentage = total > 0 ? ((context.parsed / total) * 100).toFixed(1) : 0;
+                        return `${statusDistribution[context.dataIndex].name}: ${context.parsed} (${percentage}%)`;
+                    }
+                },
+                filter: function(tooltipItem) {
+                    // Don't show tooltip for hidden items
+                    const meta = tooltipItem.chart.getDatasetMeta(0);
+                    return !meta.data[tooltipItem.dataIndex].hidden;
+                }
+            }
+        },
+        animation: {
+            animateRotate: true,
+            animateScale: false
+        }
+    }
+    });
+}
+
+// Quick Actions Functions - EXACT logic from old site
+
+// Add Vehicle - opens modal (in old site: setShowAddVehicle(true))
+function showAddVehicleModal() {
+    document.getElementById('addVehicleModal').classList.remove('hidden');
+}
+
+function closeAddVehicleModal() {
+    document.getElementById('addVehicleModal').classList.add('hidden');
+}
+
+// Process Orders - EXACT logic from old site
+function handleProcessOrders() {
+    fetch('../api/admin/process-pending-orders.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`Processed ${data.count || 0} orders successfully!`);
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error processing orders');
+    });
+}
+
+// Generate Report - EXACT format from old site
+function handleGenerateReport() {
+    const totalRevenue = 0.00;
+    const totalOrders = 0;
+    const averageOrderValue = 0;
+    const topCategory = 'Sedans';
+    const reportDate = new Date().toLocaleDateString();
+    
+    const reportText = `SALES REPORT - ${reportDate}
+=====================================
+Total Revenue: $${totalRevenue.toLocaleString()}
+Total Orders: ${totalOrders}
+Average Order Value: $${averageOrderValue.toLocaleString()}
+Top Category: ${topCategory}`;
+    
+    alert(reportText.trim());
+}
+
+// Bulk Status Update - EXACT logic from old site
+function handleBulkStatusUpdate() {
+    fetch('../api/admin/bulk-update-status.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({})
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert(`Updated ${data.count || 0} products to shipped status!`);
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating status');
+    });
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('addVehicleModal');
+    if (event.target == modal) {
+        closeAddVehicleModal();
+    }
+}
+
+// Interactive Widgets Functions
+
+// To-Do List Functions
+function addTodoItem() {
+    document.getElementById('addTodoForm').classList.remove('hidden');
+    document.getElementById('newTodoInput').focus();
+}
+
+function cancelNewTodo() {
+    document.getElementById('addTodoForm').classList.add('hidden');
+    document.getElementById('newTodoInput').value = '';
+}
+
+function saveNewTodo() {
+    const input = document.getElementById('newTodoInput');
+    const task = input.value.trim();
+
+    if (!task) {
+        alert('Please enter a task');
+        return;
+    }
+
+    fetch('../api/admin/todo-actions.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            action: 'add',
+            task: task
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error adding task');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding task');
+    });
+}
+
+function toggleTask(taskId) {
+    fetch('../api/admin/todo-actions.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            action: 'toggle',
+            id: taskId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (!data.success) {
+            alert('Error updating task');
+            location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+
+function deleteTask(taskId) {
+    if (!confirm('Delete this task?')) return;
+
+    fetch('../api/admin/todo-actions.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            action: 'delete',
+            id: taskId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert('Error deleting task');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting task');
+    });
+}
+
+// Quick Search Function
+let searchTimeout;
+const quickSearchInput = document.getElementById('quickSearchInput');
+if (quickSearchInput) {
+    quickSearchInput.addEventListener('input', function(e) {
+        clearTimeout(searchTimeout);
+        const query = e.target.value.trim();
+        const resultsDiv = document.getElementById('quickSearchResults');
+
+    if (!query) {
+        resultsDiv.classList.add('hidden');
+        resultsDiv.innerHTML = '';
+        return;
+    }
+
+    searchTimeout = setTimeout(() => {
+        // Show loading state
+        resultsDiv.innerHTML = '<div class="text-center py-3 text-sm text-gray-500"><svg class="animate-spin h-5 w-5 mx-auto text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></div>';
+        resultsDiv.classList.remove('hidden');
+
+        fetch('../api/admin/quick-search.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({query: query})
+        })
+        .then(response => {
+            if (!response.ok) throw new Error('Search failed');
+            return response.json();
+        })
+        .then(data => {
+            if (data.results && data.results.length > 0) {
+                let html = '';
+                data.results.forEach(result => {
+                    // Map colors to actual Tailwind classes
+                    let colorClasses = '';
+                    switch(result.color) {
+                        case 'green':
+                            colorClasses = 'bg-green-100 text-green-600';
+                            break;
+                        case 'blue':
+                            colorClasses = 'bg-blue-100 text-blue-600';
+                            break;
+                        case 'orange':
+                            colorClasses = 'bg-orange-100 text-orange-600';
+                            break;
+                        case 'purple':
+                            colorClasses = 'bg-purple-100 text-purple-600';
+                            break;
+                        case 'red':
+                            colorClasses = 'bg-red-100 text-red-600';
+                            break;
+                        default:
+                            colorClasses = 'bg-gray-100 text-gray-600';
+                    }
+
+                    html += `
+                        <a href="${result.url}" class="block p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs px-2 py-0.5 ${colorClasses} rounded">
+                                    ${result.type}
+                                </span>
+                                <span class="text-sm text-gray-700 dark:text-gray-300 flex-1 truncate">
+                                    ${result.title}
+                                </span>
+                            </div>
+                            ${result.subtitle ? `<p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-12">${result.subtitle}</p>` : ''}
+                        </a>
+                    `;
+                });
+                resultsDiv.innerHTML = html;
+                resultsDiv.classList.remove('hidden');
+            } else {
+                resultsDiv.innerHTML = '<div class="text-center py-3 text-sm text-gray-500 dark:text-gray-400">No results found</div>';
+                resultsDiv.classList.remove('hidden');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            resultsDiv.innerHTML = '<div class="text-center py-3 text-sm text-red-500 dark:text-red-400">Search error. Please try again.</div>';
+            resultsDiv.classList.remove('hidden');
+        });
+    }, 300);
+    });
+}
+
+// Click outside to close search results
+document.addEventListener('click', function(e) {
+    const searchDiv = document.getElementById('quickSearchResults');
+    const searchInput = document.getElementById('quickSearchInput');
+    if (searchDiv && searchInput && !searchDiv.contains(e.target) && e.target !== searchInput) {
+        searchDiv.classList.add('hidden');
+    }
+});
+</script>
+
+</div>
+<!-- End Dashboard Widgets Container -->
+
+<!-- Include Drag & Drop Script -->
+<script src="assets/dashboard-dragdrop.js"></script>
+<!-- Include Real-time Updates Script -->
+<!-- <script src="assets/dashboard-realtime.js"></script> DISABLED -->
+<!-- Collapsible Script Disabled - was causing issues -->
+<!-- <script src="assets/dashboard-collapsible.js"></script> -->
+
+<!-- ANALYTICS WIDGETS SECTION -->
+<div class="space-y-8 mt-8">
+
+<!-- 1. VISITOR TRACKING WIDGET -->
+<div class="widget-container" data-widget-id="visitor-tracking">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                    </svg>
+                    Visitor Analytics
+                </h3>
+                <div class="flex items-center space-x-2">
+                    <button onclick="resetAnalyticsData('today')"
+                            class="px-2 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                            title="Reset today's data">
+                        📅 Reset Today
+                    </button>
+                    <button onclick="resetAnalyticsData('test')"
+                            class="px-2 py-1 text-xs bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                            title="Clear test data">
+                        🧹 Clear Test
+                    </button>
+                    <button onclick="resetAnalyticsData('all')"
+                            class="px-2 py-1 text-xs bg-red-500 text-white rounded hover:bg-red-600"
+                            title="Reset all data">
+                        🗑️ Reset All
+                    </button>
+                    <span class="flex items-center text-sm ml-2">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+                        <span class="text-green-600 dark:text-green-400 font-medium">0 online now</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="p-6">
+            <!-- View Details Button -->
+            <div class="mb-4 text-right">
+                <a href="?tab=visitor-details"
+                   class="inline-block px-4 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600">
+                    📋 View Detailed Visitor List →
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <!-- Today's Visitors -->
+                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 rounded-lg p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase">Today's Visitors</p>
+                            <p class="text-2xl font-bold text-blue-900 dark:text-blue-100 mt-1">
+                                0                            </p>
+                            <p class="text-xs text-blue-700 dark:text-blue-300 mt-1">
+                                0 page views
+                            </p>
+                        </div>
+                        <svg class="w-8 h-8 text-blue-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Countries -->
+                <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 rounded-lg p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-purple-600 dark:text-purple-400 uppercase">Countries</p>
+                            <p class="text-2xl font-bold text-purple-900 dark:text-purple-100 mt-1">
+                                0                            </p>
+                            <p class="text-xs text-purple-700 dark:text-purple-300 mt-1">
+                                Different locations
+                            </p>
+                        </div>
+                        <svg class="w-8 h-8 text-purple-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Conversion Rate -->
+                <div class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 rounded-lg p-4">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <p class="text-xs font-medium text-green-600 dark:text-green-400 uppercase">Conversion Rate</p>
+                            <p class="text-2xl font-bold text-green-900 dark:text-green-100 mt-1">
+                                0%
+                            </p>
+                            <p class="text-xs text-green-700 dark:text-green-300 mt-1">
+                                Visitors to buyers
+                            </p>
+                        </div>
+                        <svg class="w-8 h-8 text-green-500 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+                    </div>
+    </div>
+</div>
+
+<!-- 2. BUSINESS METRICS WIDGET -->
+<div class="widget-container" data-widget-id="business-metrics">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b dark:border-gray-700">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Business Performance (30 Days)
+            </h3>
+        </div>
+
+        <!-- Metrics -->
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Total Orders -->
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                        0                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Total Orders</p>
+                    <div class="mt-2">
+                        <span class="text-xs px-2 py-1 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full">
+                             completed
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Unique Customers -->
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                        0                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Unique Customers</p>
+                    <div class="mt-2">
+                        <span class="text-xs text-gray-500 dark:text-gray-400">
+                            Last 30 days
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Completion Rate -->
+                <div class="text-center">
+                    <p class="text-3xl font-bold text-gray-900 dark:text-white">
+                        0%
+                    </p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">Completion Rate</p>
+                    <div class="mt-2">
+                        <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+                        <!-- Visitor Trends Chart -->
+            <div class="mt-6 pt-6 border-t dark:border-gray-700">
+                <h4 class="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">7-Day Visitor Trend</h4>
+                <div style="position: relative; height: 200px; width: 100%;">
+                    <canvas id="visitorTrendChart"></canvas>
+                </div>
+            </div>
+                    </div>
+    </div>
+</div>
+
+<!-- 3. SECURITY MONITORING WIDGET -->
+<div class="widget-container" data-widget-id="security-monitoring">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"></path>
+                    </svg>
+                    Security Monitoring
+                </h3>
+                            </div>
+        </div>
+
+        <!-- Security Stats -->
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                <!-- Failed Logins -->
+                <div class="text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                        0                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">Failed Logins (1hr)</p>
+                </div>
+
+                <!-- Security Events -->
+                
+                <div class="text-center p-4 rounded-lg bg-orange-50 dark:bg-orange-900/20">
+                    <p class="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                        0                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">Warnings (24hr)</p>
+                </div>
+
+                <div class="text-center p-4 rounded-lg bg-gray-50 dark:bg-gray-700/50">
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white">
+                        0                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">Critical (24hr)</p>
+                </div>
+
+                <div class="text-center p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                    <p class="text-2xl font-bold text-blue-600 dark:text-blue-400">
+                        0                    </p>
+                    <p class="text-xs text-gray-600 dark:text-gray-400">Info Events (24hr)</p>
+                </div>
+            </div>
+
+                    </div>
+    </div>
+</div>
+
+<!-- 4. SYSTEM HEALTH WIDGET -->
+<div class="widget-container" data-widget-id="system-health">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <!-- Header -->
+        <div class="px-6 py-4 border-b dark:border-gray-700">
+            <div class="flex items-center justify-between">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                    </svg>
+                    System Health
+                </h3>
+                                <span class="flex items-center text-sm">
+                                        <span class="w-2 h-2 bg-yellow-500 rounded-full mr-2"></span>
+                    <span class="text-yellow-600 dark:text-yellow-400">Needs Attention</span>
+                                    </span>
+            </div>
+        </div>
+
+        <!-- System Metrics -->
+        <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                                <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                                php memory                            </p>
+                            <p class="text-xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">
+                                104 MB                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Status: <span class="font-medium text-yellow-600 dark:text-yellow-400">
+                                    Warning                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                                                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                                database size                            </p>
+                            <p class="text-xl font-bold text-green-600 dark:text-green-400 mt-1">
+                                5.84 MB                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Status: <span class="font-medium text-green-600 dark:text-green-400">
+                                    Healthy                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                                                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                                page load time                            </p>
+                            <p class="text-xl font-bold text-green-600 dark:text-green-400 mt-1">
+                                41.11 ms                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Status: <span class="font-medium text-green-600 dark:text-green-400">
+                                    Healthy                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                                                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                                disk usage                            </p>
+                            <p class="text-xl font-bold text-green-600 dark:text-green-400 mt-1">
+                                0 %                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Status: <span class="font-medium text-green-600 dark:text-green-400">
+                                    Healthy                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                                                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                                error rate                            </p>
+                            <p class="text-xl font-bold text-green-600 dark:text-green-400 mt-1">
+                                0 %                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Status: <span class="font-medium text-green-600 dark:text-green-400">
+                                    Healthy                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                                                <div class="bg-green-50 dark:bg-green-900/20 rounded-lg p-4">
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <p class="text-xs font-medium text-gray-600 dark:text-gray-400 uppercase">
+                                uptime                            </p>
+                            <p class="text-xl font-bold text-green-600 dark:text-green-400 mt-1">
+                                100 %                            </p>
+                            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                                Status: <span class="font-medium text-green-600 dark:text-green-400">
+                                    Healthy                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                            </div>
+            
+            <!-- Last Check Time -->
+            <div class="mt-4 text-center">
+                <p class="text-xs text-gray-500 dark:text-gray-400">
+                    Last system check: 2025-11-28 01:44:20                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<!-- Chart Script for Visitor Trends -->
+<script>
+// Only run if Chart.js is loaded
+if (typeof Chart !== 'undefined') {
+    // Visitor Trend Chart Data
+    const visitorTrendData = [{"date":"2025-11-20","unique_visitors":"4","page_views":"4"},{"date":"2025-11-21","unique_visitors":"42","page_views":"68"},{"date":"2025-11-22","unique_visitors":"24","page_views":"29"},{"date":"2025-11-23","unique_visitors":"39","page_views":"43"},{"date":"2025-11-24","unique_visitors":"128","page_views":"222"},{"date":"2025-11-25","unique_visitors":"58","page_views":"99"},{"date":"2025-11-26","unique_visitors":"46","page_views":"76"},{"date":"2025-11-27","unique_visitors":"44","page_views":"185"}];
+
+    // Create Visitor Trend Chart
+    const trendCtx = document.getElementById('visitorTrendChart');
+    if (trendCtx) {
+        try {
+            const trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: visitorTrendData.map(d => {
+                        const date = new Date(d.date);
+                        return date.toLocaleDateString('en', { month: 'short', day: 'numeric' });
+                    }),
+                    datasets: [{
+                        label: 'Unique Visitors',
+                        data: visitorTrendData.map(d => d.unique_visitors),
+                        borderColor: 'rgb(59, 130, 246)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        tension: 0.3
+                    }, {
+                        label: 'Page Views',
+                        data: visitorTrendData.map(d => d.page_views),
+                        borderColor: 'rgb(168, 85, 247)',
+                        backgroundColor: 'rgba(168, 85, 247, 0.1)',
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 10,
+                                font: { size: 11 }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: { font: { size: 10 } }
+                        },
+                        x: {
+                            ticks: { font: { size: 10 } }
+                        }
+                    }
+                }
+            });
+        } catch(e) {
+            console.error('Chart error:', e);
+        }
+    }
+
+    // Auto-refresh real-time visitors every 2 minutes (was 30 seconds - too frequent)
+    // DISABLED for now - was causing page issues
+    /*
+    setInterval(() => {
+        fetch('/api/admin/get-realtime-visitors.php')
+            .then(response => response.json())
+            .then(data => {
+                const onlineElement = document.querySelector('[data-widget-id="visitor-tracking"] .text-green-600');
+                if (onlineElement && data.count !== undefined) {
+                    onlineElement.textContent = data.count + ' online now';
+                }
+            })
+            .catch(error => console.error('Error updating real-time visitors:', error));
+    }, 120000);
+    */
+}
+
+// Reset analytics data function
+function resetAnalyticsData(type) {
+    let confirmMsg = '';
+    switch(type) {
+        case 'all':
+            confirmMsg = 'Are you sure you want to DELETE ALL visitor data? This cannot be undone!';
+            break;
+        case 'today':
+            confirmMsg = "Reset today's visitor data? This will clear today's visitors, countries, conversion rate, and top pages.";
+            break;
+        case 'test':
+            confirmMsg = 'Delete all test/localhost visitor data?';
+            break;
+    }
+
+    if (!confirm(confirmMsg)) {
+        return;
+    }
+
+    fetch('/api/admin/reset-visitor-data.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ type: type })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message);
+            location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error resetting visitor data');
+    });
+}
+</script>
+                            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Charts data
+        const salesData = [];
+        const categoryData = [{"category":"cars-trucks","count":"11"},{"category":"classic-cars","count":"1"},{"category":"heavy-equipment","count":"1"},{"category":"rvs-motorhomes","count":"7"}];
+
+        // Dark Mode Toggle Function
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const toggle = document.getElementById('darkModeToggle');
+
+            if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                toggle.classList.remove('active');
+                localStorage.setItem('darkMode', 'false');
+            } else {
+                html.classList.add('dark');
+                toggle.classList.add('active');
+                localStorage.setItem('darkMode', 'true');
+            }
+
+            // Update Chart.js defaults if available
+            if (typeof updateChartDefaults !== 'undefined') {
+                updateChartDefaults();
+            }
+
+            // Refresh charts with new colors if on dashboard
+            setTimeout(() => {
+                if (typeof window.categoryChart !== 'undefined' && window.categoryChart) {
+                    const isDarkMode = document.documentElement.classList.contains('dark');
+                    const chartColors = {
+                        textColor: isDarkMode ? '#FFFFFF' : '#374151',
+                        borderColor: isDarkMode ? '#374151' : '#ffffff'
+                    };
+
+                    // Update chart defaults
+                    if (typeof Chart !== 'undefined') {
+                        Chart.defaults.color = chartColors.textColor;
+                        Chart.defaults.plugins.legend.labels.color = chartColors.textColor;
+                    }
+
+                    window.categoryChart.options.plugins.legend.labels.color = chartColors.textColor;
+                    window.categoryChart.data.datasets[0].borderColor = chartColors.borderColor;
+                    window.categoryChart.update();
+                }
+
+                if (typeof window.statusChart !== 'undefined' && window.statusChart) {
+                    const isDarkMode = document.documentElement.classList.contains('dark');
+                    const chartColors = {
+                        textColor: isDarkMode ? '#FFFFFF' : '#374151',
+                        borderColor: isDarkMode ? '#374151' : '#ffffff'
+                    };
+
+                    window.statusChart.options.plugins.legend.labels.color = chartColors.textColor;
+                    window.statusChart.data.datasets[0].borderColor = chartColors.borderColor;
+                    window.statusChart.update();
+                }
+            }, 100);
+        }
+
+        // Set initial toggle state
+        document.addEventListener('DOMContentLoaded', function() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const toggle = document.getElementById('darkModeToggle');
+            if (isDark && toggle) {
+                toggle.classList.add('active');
+            }
+        });
+
+        // Update chart colors for dark mode
+        function updateChartsForDarkMode() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const textColor = isDark ? '#9CA3AF' : '#374151';
+            const gridColor = isDark ? '#374151' : '#E5E7EB';
+
+            // Update chart default colors
+            Chart.defaults.color = textColor;
+            Chart.defaults.borderColor = gridColor;
+        }
+
+        // Mark all as read function
+        function markAllAsRead(type) {
+            fetch('../api/admin/mark-as-read.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'type=' + type + '&mark_all=true'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to mark as read'));
+                }
+            })
+            .catch(error => {
+                alert('Error marking as read');
+                console.error(error);
+            });
+        }
+
+        // Mark individual item as read
+        function markAsRead(type, id) {
+            fetch('../api/admin/mark-as-read.php', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+                body: 'type=' + type + '&id=' + id
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert('Error: ' + (data.message || 'Failed to mark as read'));
+                }
+            })
+            .catch(error => {
+                alert('Error marking as read');
+                console.error(error);
+            });
+        }
+    </script>
+</body>
+</html>
